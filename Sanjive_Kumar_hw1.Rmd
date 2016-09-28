@@ -1,0 +1,71 @@
+---
+title: "Sanjive_Kumar_hw1"
+author: "sanjivek"
+date: "September 8, 2016"
+output: html_document
+---
+```{r}
+library(plyr)
+library(dplyr)
+library(ggplot2)
+
+# Load the data set
+inc5k <- read.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture1/data/inc5000_data.csv",stringsAsFactors=FALSE)
+
+#######
+# Q1:Distribution of Companies by State
+#
+c <- ggplot(inc5k, aes(factor(State))) + geom_bar(fill="#009E73")
+c <- c + coord_flip()
+c <- c + theme(text = element_text(size=12), axis.title=element_text(size=14,face="bold")) 
+c <- c + labs(title = "Number of Companies by State", x= "State", y= "Count")
+c <- c + theme(plot.title = element_text(size=22))
+c
+
+ggsave('q1.png', height = 11, width = 8.5)
+
+#######
+# Q2: Employment in 3rd State
+#
+counts <- as.data.frame(table(inc5k$State))
+colnames(counts) <- c("State", "Count")
+head(counts) # check structure
+x <- sort(counts$Count, TRUE)[3] 
+filter(counts, Count == x)
+
+# pull out only NY data from orinal dataset and remove incomplete cases
+ny_data <- filter(inc5k, State == "NY")
+ny_data <- ny_data[complete.cases(ny_data),]
+str(ny_data)
+
+d <- ggplot(ny_data) +  geom_bar(aes(Industry, Employees, fill = Industry), position = "dodge", stat = "summary", fun.y = "mean", fill="sky blue")
+d <- d + coord_flip()
+d <- d + theme(legend.position="none")
+d <- d + theme(text = element_text(size=12), axis.title=element_text(size=14,face="bold")) 
+d <- d + labs(title = "Average Number of Employees by Industry in NY", x= "Industry", y= "Average Number of Employees")
+d <- d + theme(plot.title = element_text(size=17))
+d
+
+ggsave('q2.png', height = 8.5, width = 9)
+
+#######
+# Q3 = Most Revenue per Employee by Industry
+#
+#filter out incomplete cases
+rev_data <- inc5k[complete.cases(inc5k),]
+# Create a new column showing revenue/employee
+rev_data <- rev_data %>% mutate(rev_per_em = Revenue / Employees)
+str(rev_data)
+head(rev_data)
+
+# Plot average revenue/employee by industry
+e <- ggplot(rev_data) +  geom_bar(aes(Industry, rev_per_em, fill = Industry), position = "dodge", stat = "summary", fun.y = "mean", fill="darkslateblue")
+e <- e + coord_flip()
+e <- e + theme(legend.position="none")
+e <- e + theme(text = element_text(size=12), axis.title=element_text(size=14,face="bold")) 
+e <- e + labs(title = "Average Revenue per Employees by Industry", x= "Industry", y= "Average Revenue per Employees")
+e <- e + theme(plot.title = element_text(size=17))
+e
+
+ggsave('q3.png', height = 8.5, width = 9)
+```
